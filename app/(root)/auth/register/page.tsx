@@ -22,6 +22,7 @@ import { FaRegEyeSlash } from "react-icons/fa";
 import { FaRegEye } from "react-icons/fa6";
 import Link from "next/link";
 import { APP_LOGIN } from "@/routes/app";
+import axios from "axios";
 
 const formSchema = zSchema
   .pick({
@@ -36,12 +37,13 @@ const formSchema = zSchema
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords do not match",
+    path: ["confirmPassword"],
   });
-
 const defaultValues = {
   name: "",
   email: "",
   password: "",
+  confirmPassword: "",
 };
 
 const RegisterPage = () => {
@@ -56,11 +58,26 @@ const RegisterPage = () => {
   });
 
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
-    console.log("register form values: ", values);
+    try {
+      setLoading(true);
+
+      const { data } = await axios.post("/api/auth/register", values);
+
+      if (!data?.success)
+        throw new Error(data?.message || "Registration failed");
+
+      form.reset();
+
+      alert(data?.message || "Registration successful! Please login.");
+    } catch (error) {
+      console.error("Registration error: ", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <Card className="w-[400px]">
+    <Card className="w-[450px]">
       <CardContent>
         <div className="flex justify-center">
           <Image

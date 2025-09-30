@@ -50,7 +50,7 @@ const LoginPage = () => {
   };
 
   return (
-    <Card className="w-[400px]">
+    <Card className="w-[450px]">
       <CardContent>
         <div className="flex justify-center">
           <Image
