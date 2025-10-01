@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Sidebar,
   SidebarContent,
@@ -10,6 +12,7 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import Image from "next/image";
 import LOGO_BLACK from "@/public/assets/images/logo-black.png";
@@ -26,8 +29,10 @@ import {
 import Link from "next/link";
 
 const AdminSidebar = () => {
+  const { toggleSidebar } = useSidebar();
+
   return (
-    <Sidebar>
+    <Sidebar className="z-50">
       <SidebarHeader className="border-b h-14 p-0">
         <div className="flex justify-between items-center px-4">
           <Image
@@ -45,7 +50,12 @@ const AdminSidebar = () => {
             className="hidden dark:block h-[50px] w-auto"
           />
 
-          <Button type="button" size={"icon"} className="md:hidden">
+          <Button
+            onClick={toggleSidebar}
+            type="button"
+            size={"icon"}
+            className="md:hidden"
+          >
             <IoMdClose />
           </Button>
         </div>
