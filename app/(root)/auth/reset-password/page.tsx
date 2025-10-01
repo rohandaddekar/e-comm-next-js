@@ -18,44 +18,29 @@ import {
 import { Input } from "@/components/ui/input";
 import AppButton from "@/components/app/Button";
 import { useState } from "react";
-import { FaRegEyeSlash } from "react-icons/fa";
-import { FaRegEye } from "react-icons/fa6";
 import Link from "next/link";
-import { APP_REGISTER, APP_RESET_PASSWORD, USER_DASHBOARD } from "@/routes/app";
+import { APP_LOGIN } from "@/routes/app";
 import axios, { AxiosError } from "axios";
 import toast from "react-hot-toast";
 import OtpVerification, {
   otpVerificationSchema,
 } from "@/components/app/OtpVerification";
-import { useDispatch } from "react-redux";
-import type { AppDispatch } from "@/store/store";
-import { login } from "@/store/slices/authSlice";
-import { useRouter, useSearchParams } from "next/navigation";
-import { ADMIN_DASHBOARD } from "@/routes/admin";
+import UpdatePassword from "@/components/app/UpdatePassword";
 
-const formSchema = zSchema
-  .pick({
-    email: true,
-  })
-  .extend({
-    password: z.string().min(6, "Password is required"),
-  });
+const formSchema = zSchema.pick({
+  email: true,
+});
 
 const defaultValues = {
   email: "",
-  password: "",
 };
 
-const LoginPage = () => {
+const ResetPasswordPage = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [otpVerificationLoading, setOtpVerificationLoading] =
     useState<boolean>(false);
-  const [showPassword, setShowPassword] = useState<boolean>(false);
   const [otpEmail, setOtpEmail] = useState<string | null>(null);
-
-  const dispatch = useDispatch<AppDispatch>();
-  const searchParams = useSearchParams();
-  const router = useRouter();
+  const [isOtpVerified, setIsOtpVerified] = useState<boolean>(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -66,20 +51,22 @@ const LoginPage = () => {
     try {
       setLoading(true);
 
-      const { data } = await axios.post("/api/auth/login", values);
+      const { data } = await axios.post(
+        "/api/auth/reset-password/send-otp",
+        values
+      );
 
-      if (!data?.success) throw new Error(data?.message || "Login failed");
+      if (!data?.success)
+        throw new Error(data?.message || "Sending OTP failed");
 
       setOtpEmail(values.email);
 
-      form.reset();
-
-      toast.success(data?.message || "Login successful!");
+      toast.success(data?.message || "OTP sent successfully!");
     } catch (error: unknown) {
-      console.error("Login error: ", error);
+      console.error("OTP sending error: ", error);
 
       const axiosError = error as AxiosError<{ message: string }>;
-      toast.error(axiosError?.response?.data?.message || "Login failed!");
+      toast.error(axiosError?.response?.data?.message || "OTP sending failed!");
     } finally {
       setLoading(false);
     }
@@ -91,23 +78,15 @@ const LoginPage = () => {
     try {
       setOtpVerificationLoading(true);
 
-      const { data } = await axios.post("/api/auth/verify-otp", values);
+      const { data } = await axios.post(
+        "/api/auth/reset-password/verify-otp",
+        values
+      );
 
       if (!data?.success)
         throw new Error(data?.message || "OTP verification failed");
 
-      setOtpEmail(null);
-      dispatch(login(data?.data));
-
-      if (searchParams.has("callback")) {
-        router.push(searchParams.get("callback") as string);
-      } else {
-        if (data?.data?.user?.role === "admin") {
-          router.push(ADMIN_DASHBOARD);
-        } else {
-          router.push(USER_DASHBOARD);
-        }
-      }
+      setIsOtpVerified(true);
 
       toast.success(data?.message || "OTP verification successful!");
     } catch (error: unknown) {
@@ -138,8 +117,8 @@ const LoginPage = () => {
         {!otpEmail ? (
           <>
             <div className="text-center mt-4">
-              <h1 className="font-bold text-3xl mb-2">Login Into Account</h1>
-              <p>Login into your account by filling out the form below.</p>
+              <h1 className="font-bold text-3xl mb-2">Reset Password</h1>
+              <p>Reset your password by filling out the form below.</p>
             </div>
 
             <div className="mt-6">
@@ -167,69 +146,30 @@ const LoginPage = () => {
                       )}
                     />
                   </div>
-                  <div>
-                    <FormField
-                      control={form.control}
-                      name="password"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Password</FormLabel>
-                          <div className="relative">
-                            <FormControl>
-                              <Input
-                                type={showPassword ? "text" : "password"}
-                                placeholder="••••••••"
-                                {...field}
-                              />
-                            </FormControl>
-
-                            <button
-                              type="button"
-                              className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer"
-                              onClick={() => setShowPassword(!showPassword)}
-                            >
-                              {showPassword ? <FaRegEyeSlash /> : <FaRegEye />}
-                            </button>
-                          </div>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
 
                   <div>
                     <AppButton
                       type="submit"
-                      text="Login"
+                      text="Send Reset Link"
                       loading={loading}
                       onClick={form.handleSubmit(handleSubmit)}
                       className="w-full"
                     />
                   </div>
 
-                  <div>
-                    <Link
-                      href={APP_RESET_PASSWORD}
-                      className="block text-center text-primary hover:underline"
-                    >
-                      Forgot Password?
-                    </Link>
-                  </div>
-
                   <div className="flex justify-center items-center gap-1">
-                    <p>Don&apos;t have an account?</p>
                     <Link
-                      href={APP_REGISTER}
+                      href={APP_LOGIN}
                       className="text-primary hover:underline"
                     >
-                      Create an account
+                      Back to Login
                     </Link>
                   </div>
                 </form>
               </Form>
             </div>
           </>
-        ) : (
+        ) : !isOtpVerified ? (
           <>
             <div className="text-center mt-4">
               <h1 className="font-bold text-3xl mb-2">OTP Verification</h1>
@@ -244,10 +184,21 @@ const LoginPage = () => {
               />
             </div>
           </>
+        ) : (
+          <>
+            <div className="text-center mt-4">
+              <h1 className="font-bold text-3xl mb-2">Update Password</h1>
+              <p>Enter your new password below.</p>
+            </div>
+
+            <div className="mt-6">
+              <UpdatePassword email={otpEmail} />
+            </div>
+          </>
         )}
       </CardContent>
     </Card>
   );
 };
 
-export default LoginPage;
+export default ResetPasswordPage;

@@ -21,6 +21,11 @@ export const zSchema = z.object({
     .trim()
     .min(2, { message: "Name must be at least 2 characters" })
     .max(50, { message: "Name must be at most 50 characters" }),
+
+  otp: z
+    .string()
+    .regex(/^\d+$/, { message: "OTP must contain only digits" })
+    .length(6, { message: `OTP must be exactly 6 digits` }),
 });
 
 export type ZSchema = z.infer<typeof zSchema>;

@@ -22,7 +22,8 @@ import { FaRegEyeSlash } from "react-icons/fa";
 import { FaRegEye } from "react-icons/fa6";
 import Link from "next/link";
 import { APP_LOGIN } from "@/routes/app";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
+import toast from "react-hot-toast";
 
 const formSchema = zSchema
   .pick({
@@ -68,9 +69,14 @@ const RegisterPage = () => {
 
       form.reset();
 
-      alert(data?.message || "Registration successful! Please login.");
-    } catch (error) {
+      toast.success(data?.message || "Registration successful! Please login.");
+    } catch (error: unknown) {
       console.error("Registration error: ", error);
+
+      const axiosError = error as AxiosError<{ message: string }>;
+      toast.error(
+        axiosError?.response?.data?.message || "Registration failed!"
+      );
     } finally {
       setLoading(false);
     }
