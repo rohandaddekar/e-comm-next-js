@@ -29,7 +29,7 @@ const UserDropdown = () => {
       </DropdownMenuTrigger>
       <DropdownMenuContent className="me-5 w-44">
         <DropdownMenuLabel>
-          <p className="font-semibold">{auth?.name}</p>
+          <p className="font-semibold">{auth?.user?.name}</p>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>

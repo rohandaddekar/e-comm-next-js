@@ -9,7 +9,7 @@ export interface User {
 }
 
 export interface AuthState {
-  auth: User | null;
+  auth: { user: User } | null;
 }
 
 const initialState: AuthState = {
@@ -21,7 +21,7 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     login: (state, action: PayloadAction<User>) => {
-      state.auth = action.payload;
+      state.auth = { user: action.payload };
     },
     logout: (state) => {
       state.auth = null;
