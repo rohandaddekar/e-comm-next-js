@@ -1,5 +1,5 @@
-const AppLayout = () => {
-  return <div>AppLayout</div>;
+const AppLayout = ({ children }: { children: React.ReactNode }) => {
+  return <div>AppLayout {children}</div>;
 };
 
 export default AppLayout;
