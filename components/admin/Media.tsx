@@ -25,7 +25,7 @@ export interface IMedia {
 
 interface MediaProps {
   media: IMedia;
-  onDelete: (id: string) => void;
+  onDelete: (ids: string[], deleteType: "SD" | "PD" | "RSD") => void;
   deleteType: "SD" | "PD" | "RSD";
   selectedMedia: string[];
   setSelectedMedia: (ids: string[]) => void;
@@ -87,7 +87,7 @@ const Media: React.FC<MediaProps> = ({
               </>
             )}
 
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onDelete([media._id], deleteType)}>
               <LuTrash color="red" />{" "}
               {deleteType === "SD" ? "Move Into Trash" : "Delete Permanently"}
             </DropdownMenuItem>

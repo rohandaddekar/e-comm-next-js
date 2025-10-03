@@ -7,9 +7,11 @@ import { Button } from "@/components/ui/button";
 import { FiPlus } from "react-icons/fi";
 import toast from "react-hot-toast";
 import axios, { AxiosError } from "axios";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface UploadMediaProps {
   isMultiple?: boolean;
+  invalidatesQueries?: string[];
 }
 
 interface UploadInfo {
@@ -33,7 +35,12 @@ interface CloudinaryUploadWidgetInfoWithFiles
   }[];
 }
 
-const UploadMedia: React.FC<UploadMediaProps> = ({ isMultiple = false }) => {
+const UploadMedia: React.FC<UploadMediaProps> = ({
+  isMultiple = false,
+  invalidatesQueries,
+}) => {
+  const queryClient = useQueryClient();
+
   const handleOnError = (error: unknown) => {
     if (!error) {
       toast.error("Failed to upload media. Please try again.");
@@ -76,6 +83,11 @@ const UploadMedia: React.FC<UploadMediaProps> = ({ isMultiple = false }) => {
           );
         }
 
+        if (invalidatesQueries && invalidatesQueries.length > 0) {
+          queryClient.invalidateQueries({
+            queryKey: invalidatesQueries,
+          });
+        }
         toast.success(data.message || "Media uploaded successfully.");
       } catch (error) {
         console.error("Upload error: ", error);
