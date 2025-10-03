@@ -5,6 +5,7 @@ interface IMedia extends Document {
   public_id: string;
   path: string;
   thumbnail_url: string;
+  secure_url: string;
   alt?: string;
   title?: string;
   deletedAt?: Date | null;
@@ -28,6 +29,11 @@ const mediaSchema = new Schema<IMedia>(
       trim: true,
     },
     thumbnail_url: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    secure_url: {
       type: String,
       required: true,
       trim: true,

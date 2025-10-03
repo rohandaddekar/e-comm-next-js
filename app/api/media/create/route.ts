@@ -22,7 +22,7 @@ export const POST = async (req: NextRequest) => {
       return responseHandler({
         success: false,
         message: "Unauthorized",
-        statusCode: 401,
+        statusCode: 403,
         data: null,
       });
     }
