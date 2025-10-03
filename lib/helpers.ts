@@ -1,3 +1,5 @@
+import { jwtVerify } from "jose";
+import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 interface ResponseHandlerParams {
@@ -76,4 +78,31 @@ export const generateOtp = (digits: number = 6) => {
   const max = Math.pow(10, digits) - 1;
   const otp = Math.floor(min + Math.random() * (max - min + 1));
   return otp.toString();
+};
+
+export const isAuthenticated = async (role: "user" | "admin") => {
+  try {
+    const cookieStore = await cookies();
+    if (!cookieStore.has("access_token")) {
+      return {
+        isAuth: false,
+      };
+    }
+
+    const access_token = cookieStore.get("access_token");
+
+    const { payload } = await jwtVerify(
+      access_token?.value || "",
+      new TextEncoder().encode(process.env.SECRET_KEY)
+    );
+
+    if (payload.role !== role) {
+      return { isAuth: false };
+    }
+
+    return { isAuth: true, userId: payload.userId };
+  } catch (error) {
+    console.error("Authentication error: ", error);
+    return { isAuth: false };
+  }
 };
